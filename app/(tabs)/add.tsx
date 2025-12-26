@@ -1,24 +1,52 @@
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useState } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 
 export default function AddEvent() {
     const router = useRouter();
+    const { date } = useLocalSearchParams<{ date?: string }>();
 
     const [title, setTitle] = useState("");
-    const [content, setContent] = useState(""); // ✅ 내용
-    const [time, setTime] = useState("");
+    const [description, setDescription] = useState("");
+    const [startTime, setStartTime] = useState("");
 
-    const handleAdd = () => {
-        if (!title || !content || !time) {
+    // ✅ 날짜: param 있으면 그 날짜, 없으면 오늘
+    const [selectedDate] = useState(() => {
+        if (date) {
+            return new Date(date + "T00:00:00");
+        }
+        return new Date();
+    });
+
+    const formatDateKey = (date: Date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    };
+
+    const handleAdd = async () => {
+        if (!title || !description || !startTime) {
             Alert.alert("오류", "제목, 내용, 시간을 모두 입력하세요");
             return;
         }
 
-        router.replace({
-            pathname: "/(tabs)",
-            params: { title, content, time },
-        });
+        try {
+            await addDoc(collection(db, "events"), {
+                title,
+                description,
+                startTime,
+                date: formatDateKey(selectedDate), // ⭐ 핵심
+                userId: auth.currentUser!.uid,
+                createdAt: serverTimestamp(),
+            });
+
+            router.back();
+        } catch (e) {
+            Alert.alert("오류", "일정 추가 실패");
+        }
     };
 
     return (
@@ -27,68 +55,36 @@ export default function AddEvent() {
                 일정 추가
             </Text>
 
-            {/* 제목 */}
             <TextInput
                 placeholder="일정 제목"
                 placeholderTextColor="#999"
                 value={title}
                 onChangeText={setTitle}
-                style={{
-                    borderWidth: 1,
-                    borderColor: "#ccc",
-                    padding: 12,
-                    borderRadius: 8,
-                    marginBottom: 16,
-                    color: "#000",
-                }}
+                style={{ borderWidth: 1, borderColor: "#ccc", padding: 12, marginBottom: 16 }}
             />
 
-            {/* 내용 */}
             <TextInput
                 placeholder="일정 내용"
                 placeholderTextColor="#999"
-                value={content}
-                onChangeText={setContent}
+                value={description}
+                onChangeText={setDescription}
                 multiline
-                style={{
-                    borderWidth: 1,
-                    borderColor: "#ccc",
-                    padding: 12,
-                    borderRadius: 8,
-                    marginBottom: 16,
-                    color: "#000",
-                    height: 100,
-                    textAlignVertical: "top",
-                }}
+                style={{ borderWidth: 1, borderColor: "#ccc", padding: 12, marginBottom: 16, height: 100 }}
             />
 
-            {/* 시간 */}
             <TextInput
-                placeholder="시간"
+                placeholder="시간 (예: 09:00)"
                 placeholderTextColor="#999"
-                value={time}
-                onChangeText={setTime}
-                style={{
-                    borderWidth: 1,
-                    borderColor: "#ccc",
-                    padding: 12,
-                    borderRadius: 8,
-                    marginBottom: 24,
-                    color: "#000",
-                }}
+                value={startTime}
+                onChangeText={setStartTime}
+                style={{ borderWidth: 1, borderColor: "#ccc", padding: 12, marginBottom: 24 }}
             />
 
             <TouchableOpacity
                 onPress={handleAdd}
-                style={{
-                    backgroundColor: "#000",
-                    padding: 14,
-                    borderRadius: 8,
-                }}
+                style={{ backgroundColor: "#000", padding: 14 }}
             >
-                <Text style={{ color: "#fff", textAlign: "center", fontSize: 16 }}>
-                    추가
-                </Text>
+                <Text style={{ color: "#fff", textAlign: "center" }}>추가</Text>
             </TouchableOpacity>
         </View>
     );
