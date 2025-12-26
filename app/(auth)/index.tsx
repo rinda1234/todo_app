@@ -79,6 +79,7 @@ export default function Login() {
 
             <TextInput
                 placeholder="Email"
+                placeholderTextColor="#999"
                 autoCapitalize="none"
                 value={email}
                 onChangeText={setEmail}
@@ -88,11 +89,13 @@ export default function Login() {
                     padding: 12,
                     marginBottom: 12,
                     borderRadius: 6,
+                    color: "#000",
                 }}
             />
 
             <TextInput
                 placeholder="Password"
+                placeholderTextColor="#999"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
@@ -102,6 +105,7 @@ export default function Login() {
                     padding: 12,
                     marginBottom: 24,
                     borderRadius: 6,
+                    color: "#000",
                 }}
             />
 

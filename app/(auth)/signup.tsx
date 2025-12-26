@@ -42,6 +42,7 @@ export default function Signup() {
 
             <TextInput
                 placeholder="Email"
+                placeholderTextColor="#999"
                 autoCapitalize="none"
                 value={email}
                 onChangeText={setEmail}
@@ -51,11 +52,13 @@ export default function Signup() {
                     padding: 12,
                     marginBottom: 12,
                     borderRadius: 6,
+                    color: "#000",
                 }}
             />
 
             <TextInput
                 placeholder="Password (min 6 chars)"
+                placeholderTextColor="#999"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
@@ -65,6 +68,7 @@ export default function Signup() {
                     padding: 12,
                     marginBottom: 24,
                     borderRadius: 6,
+                    color: "#000",
                 }}
             />
 
